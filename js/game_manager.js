@@ -5,6 +5,10 @@ function GameManager(size, InputManager, Actuator, StorageManager) {
   this.actuator       = new Actuator;
 
   this.startTiles     = 2;
+  this.spawnChance    = 0.8;
+  this.timerMaxSeconds   = 3;
+  this.timerCurrentSeconds  = 3;
+  this.timerObj = null;
 
   this.inputManager.on("move", this.move.bind(this));
   this.inputManager.on("restart", this.restart.bind(this));
@@ -35,6 +39,8 @@ GameManager.prototype.isGameTerminated = function () {
   }
 };
 
+
+
 // Set up the game
 GameManager.prototype.setup = function () {
   var previousState = this.storageManager.getGameState();
@@ -53,11 +59,19 @@ GameManager.prototype.setup = function () {
     this.over        = false;
     this.won         = false;
     this.keepPlaying = false;
+    this.timerCurrentSeconds = this.timerMaxSeconds;
+    this.actuator.updateTimer(this.timerCurrentSeconds);
 
     // Add the initial tiles
     this.addStartTiles();
-  }
 
+
+  }
+  //start the timer
+  if(this.timerObj) {} else {
+    this.timerObj = window.setInterval(this.timer.bind( this ), 1000 );
+  }
+  
   // Update the actuator
   this.actuate();
 };
@@ -69,16 +83,32 @@ GameManager.prototype.addStartTiles = function () {
   }
 };
 
+GameManager.prototype.timer = function() {
+  this.timerCurrentSeconds = this.timerCurrentSeconds - 1;  
+  if (this.timerCurrentSeconds < 0) {
+     this.timerCurrentSeconds = this.timerMaxSeconds;
+     var t = this.addRandomTile();
+     this.actuator.addTile(t);
+     console.log('Add new tile...');
+  }
+  console.log('Timer: ' + this.timerCurrentSeconds);
+
+  //Do code for showing the number of seconds here
+  this.actuator.updateTimer(this.timerCurrentSeconds);
+};
+
 // Adds a tile in a random position
 GameManager.prototype.addRandomTile = function () {
-  for (var i = 0; i <= 2; i++) {
+  //only spawn a new tile at certain times
+  
     if (this.grid.cellsAvailable()) {
       var value = Math.random() < 0.9 ? 2 : 4;
       var tile = new Tile(this.grid.randomAvailableCell(), value);
 
       this.grid.insertTile(tile);
     }
-  }
+    return tile;
+
 };
 
 // Sends the updated grid to the actuator
@@ -186,8 +216,9 @@ GameManager.prototype.move = function (direction) {
   });
 
   if (moved) {
-    this.addRandomTile();
-
+    if (Math.random() < this.spawnChance) {
+      this.addRandomTile();
+    }
     if (!this.movesAvailable()) {
       this.over = true; // Game over!
     }
