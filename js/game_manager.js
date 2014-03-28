@@ -68,9 +68,8 @@ GameManager.prototype.setup = function () {
 
   }
   //start the timer
-  if(this.timerObj) {} else {
-    this.timerObj = window.setInterval(this.timer.bind( this ), 1000 );
-  }
+  this.timerObj = window.setInterval(this.timer.bind( this ), 1000 );
+  
   
   // Update the actuator
   this.actuate();
@@ -84,14 +83,34 @@ GameManager.prototype.addStartTiles = function () {
 };
 
 GameManager.prototype.timer = function() {
-  this.timerCurrentSeconds = this.timerCurrentSeconds - 1;  
-  if (this.timerCurrentSeconds < 0) {
-     this.timerCurrentSeconds = this.timerMaxSeconds;
-     var t = this.addRandomTile();
-     this.actuator.addTile(t);
-     console.log('Add new tile...');
+  if (this.over == true) {
+    this.timerCurrentSeconds = 0;
+  } else {
+      
+    if (this.timerCurrentSeconds <= 0) {
+       this.timerCurrentSeconds = this.timerMaxSeconds;
+       if (this.grid.cellsAvailable()) {
+        
+        var tile = new Tile(this.grid.randomAvailableCell(), "X");
+
+        this.grid.insertTile(tile);
+        this.actuator.addTile(tile);
+        this.storageManager.setGameState(this.serialize());
+        if (!this.movesAvailable()) {
+          console.log("Game Over");
+          this.over = true; // Game over!
+          this.actuate(this.grid, this);
+          clearInterval(this.timerObj);
+          this.timerCurrentSeconds = 0;
+        }
+
+       }
+
+       //console.log('Add new tile...');
+    }
+    this.timerCurrentSeconds = this.timerCurrentSeconds - 1;
   }
-  console.log('Timer: ' + this.timerCurrentSeconds);
+  //console.log('Timer: ' + this.timerCurrentSeconds);
 
   //Do code for showing the number of seconds here
   this.actuator.updateTimer(this.timerCurrentSeconds);
@@ -287,13 +306,14 @@ GameManager.prototype.tileMatchesAvailable = function () {
       tile = this.grid.cellContent({ x: x, y: y });
 
       if (tile) {
+
         for (var direction = 0; direction < 4; direction++) {
           var vector = self.getVector(direction);
           var cell   = { x: x + vector.x, y: y + vector.y };
 
           var other  = self.grid.cellContent(cell);
 
-          if (other && other.value === tile.value) {
+          if (other && other.value === tile.value && (other.value !== "X" || tile.value !== "X")) {
             return true; // These two tiles can be merged
           }
         }
