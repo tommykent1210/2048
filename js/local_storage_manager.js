@@ -40,12 +40,61 @@ LocalStorageManager.prototype.localStorageSupported = function () {
 };
 
 // Best score getters/setters
-LocalStorageManager.prototype.getBestScore = function () {
+LocalStorageManager.prototype.getBestScore = function (type, difficulty) {
+  var scoresData  = this.getBestScoreArray();
+  
+  try {
+    var scoresObj   = JSON.parse(scoresData);
+    var size        = type + "x" + type;
+    if (this.isArray(scoresObj)) {
+      return scoresObj[size][difficulty] || 0;
+    } else {
+      return 0;
+    }
+    
+  } catch (error) {
+    console.log(error);
+    return 0;
+  }
+
+};
+
+LocalStorageManager.prototype.getBestScoreArray = function () {
   return this.storage.getItem(this.bestScoreKey) || 0;
 };
 
-LocalStorageManager.prototype.setBestScore = function (score) {
-  this.storage.setItem(this.bestScoreKey, score);
+LocalStorageManager.prototype.isArray = function(what) {
+    return Object.prototype.toString.call(what) === '[object Array]';
+}
+
+LocalStorageManager.prototype.setBestScore = function (score, type, difficulty) {
+  var currentScores   = this.getBestScoreArray();
+  var scoresObj       = null;
+  var size            = type + "x" + type; 
+  console.log(currentScores);
+  if (currentScores !== 0) {
+      scoresObj = JSON.parse(currentScores);
+      scoresObj[type][difficulty] = score; //TO FIX!
+  } else {
+    scoresObj = {
+      "4x4" : {
+        "easy": 0, 
+        "medium": 0, 
+        "hard": 0
+      },
+      "5x5" : {
+        "easy": 0, 
+        "medium": 0, 
+        "hard": 0
+      },
+      "6x6" : {
+        "easy": 0, 
+        "medium": 0, 
+        "hard": 0
+    }};
+    scoresObj[size][difficulty] = score;
+  }
+  this.storage.setItem(this.bestScoreKey, JSON.stringify(scoresObj));
 };
 
 // Game state getters/setters and clearing

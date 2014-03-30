@@ -187,6 +187,14 @@ hr {
 
   100% {
     margin-top: 20%; } }
+.game-size-four {
+    width: 500px;
+    height: 500px;
+}
+.game-size-five {
+    width: 622px;
+    height: 622px;
+}
 .game-size-six {
     width: 744px;
     height: 744px;
@@ -209,6 +217,7 @@ hr {
   -webkit-box-sizing: border-box;
   -moz-box-sizing: border-box;
   box-sizing: border-box; }
+
 
 .game-message {
   display: none;
@@ -262,8 +271,8 @@ hr {
     vertical-align: middle;
     margin-left: 10px; }
   .game-message.game-won {
-    background: rgba(237, 194, 46, 0.5);
-    color: #f9f6f2; }
+    /*background: rgba(237, 194, 46, 0.5);
+    color: #f9f6f2; */}
     .game-message.game-won a.keep-playing-button {
       display: inline-block; }
   .game-message.game-won, .game-message.game-over, .game-message.game-menu {
@@ -283,6 +292,10 @@ hr {
       -moz-animation-fill-mode: both;
       animation-fill-mode: both; }
 
+.button-active {
+    background: #C92D18 !important;
+    color: #f9f6f2 !important;
+ }
 .grid-container {
   position: absolute;
   z-index: 1; }

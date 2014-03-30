@@ -7,6 +7,8 @@ function HTMLActuator() {
   this.timerContainer   = document.querySelector(".timer-container");
   this.gridContainer    = document.querySelector(".grid-container");
   this.menuContainer    = document.querySelector(".main-menu");
+  this.rootContainer    = document.querySelector(".container");
+  this.gameContainer    = document.querySelector(".game-container");
 
   this.score = 0;
 }
@@ -57,6 +59,30 @@ HTMLActuator.prototype.setupGameGrid = function (size) {
   var classesCell   = [ "grid-cell" ];
   this.clearContainer(this.gridContainer);
   
+  //apply size classes
+  if (size === 4) {
+    this.rootContainer.classList.add("game-size-four");
+    this.rootContainer.classList.remove("game-size-five");
+    this.rootContainer.classList.remove("game-size-six");
+    this.gameContainer.classList.add("game-size-four");
+    this.gameContainer.classList.remove("game-size-five");
+    this.gameContainer.classList.remove("game-size-six");
+  } else if (size === 5) {
+    this.rootContainer.classList.remove("game-size-four");
+    this.rootContainer.classList.add("game-size-five");
+    this.rootContainer.classList.remove("game-size-six");
+    this.gameContainer.classList.remove("game-size-four");
+    this.gameContainer.classList.add("game-size-five");
+    this.gameContainer.classList.remove("game-size-six");
+  } else {
+    this.rootContainer.classList.remove("game-size-four");
+    this.rootContainer.classList.remove("game-size-five");
+    this.rootContainer.classList.add("game-size-six");
+    this.gameContainer.classList.remove("game-size-four");
+    this.gameContainer.classList.remove("game-size-five");
+    this.gameContainer.classList.add("game-size-six");
+  }
+
   for (var x = 0 ; x < size; x++) {
     var gridRow   = document.createElement("div");
     for (var y = 0 ; y < size; y++) {
@@ -173,6 +199,16 @@ HTMLActuator.prototype.updateBestScore = function (bestScore) {
 HTMLActuator.prototype.updateTimer = function (time) {
   this.timerContainer.textContent = "00:0" + time;
 };
+
+HTMLActuator.prototype.activateButton = function(identifier) {
+  var buttonSelector = document.querySelector(identifier);
+  buttonSelector.classList.add("button-active");
+}; 
+
+HTMLActuator.prototype.deactivateButton = function(identifier) {
+  var buttonSelector = document.querySelector(identifier);
+  buttonSelector.classList.remove("button-active");
+}; 
 
 HTMLActuator.prototype.message = function (status) {
   var type = null;
