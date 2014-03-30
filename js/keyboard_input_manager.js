@@ -75,6 +75,15 @@ KeyboardInputManager.prototype.listen = function () {
   this.bindButtonPress(".retry-button", this.restart);
   this.bindButtonPress(".restart-button", this.restart);
   this.bindButtonPress(".keep-playing-button", this.keepPlaying);
+  this.bindButtonPress(".gamemode-difficulty-easy", this.difficultyEasy);
+  this.bindButtonPress(".gamemode-difficulty-medium", this.difficultyMedium);
+  this.bindButtonPress(".gamemode-difficulty-hard", this.difficultyHard);
+  this.bindButtonPress(".gamemode-size-four", this.sizeFour);
+  this.bindButtonPress(".gamemode-size-five", this.sizeFive);
+  this.bindButtonPress(".gamemode-size-six", this.sizeSix);
+  this.bindButtonPress(".gamemode-add", this.gmAdd);
+  this.bindButtonPress(".gamemode-remove", this.gmRemove);
+
 
   // Respond to swipe events
   var touchStartClientX, touchStartClientY;
@@ -137,12 +146,47 @@ KeyboardInputManager.prototype.restart = function (event) {
   this.emit("restart");
 };
 
+//gamemode related stuff
+KeyboardInputManager.prototype.difficultyEasy = function (event) {
+  event.preventDefault();
+  this.emit("difficultyEasy");
+};
+KeyboardInputManager.prototype.difficultyMedium = function (event) {
+  event.preventDefault();
+  this.emit("difficultyMedium");
+};
+KeyboardInputManager.prototype.difficultyHard = function (event) {
+  event.preventDefault();
+  this.emit("difficultyHard");
+};
+KeyboardInputManager.prototype.sizeFour = function (event) {
+  event.preventDefault();
+  this.emit("sizeFour");
+};
+KeyboardInputManager.prototype.sizeFive = function (event) {
+  event.preventDefault();
+  this.emit("sizeFive");
+};
+KeyboardInputManager.prototype.sizeSix = function (event) {
+  event.preventDefault();
+  this.emit("sizeSix");
+};
+KeyboardInputManager.prototype.gmAdd = function (event) {
+  event.preventDefault();
+  this.emit("gmAdd");
+};
+KeyboardInputManager.prototype.gmRemove = function (event) {
+  event.preventDefault();
+  this.emit("gmRemove");
+};
+
 KeyboardInputManager.prototype.keepPlaying = function (event) {
   event.preventDefault();
   this.emit("keepPlaying");
 };
 
 KeyboardInputManager.prototype.bindButtonPress = function (selector, fn) {
+  console.log("Binding: " + selector);
   var button = document.querySelector(selector);
   button.addEventListener("click", fn.bind(this));
   button.addEventListener(this.eventTouchend, fn.bind(this));

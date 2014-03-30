@@ -5,12 +5,14 @@ function HTMLActuator() {
   this.messageContainer = document.querySelector(".game-message");
   this.sharingContainer = document.querySelector(".score-sharing");
   this.timerContainer   = document.querySelector(".timer-container");
+  this.gridContainer   = document.querySelector(".grid-container");
 
   this.score = 0;
 }
 
 HTMLActuator.prototype.actuate = function (grid, metadata) {
   var self = this;
+  console.log(metadata.isMenu);
 
   window.requestAnimationFrame(function () {
     self.clearContainer(self.tileContainer);
@@ -27,15 +29,39 @@ HTMLActuator.prototype.actuate = function (grid, metadata) {
     self.updateBestScore(metadata.bestScore);
 
     if (metadata.terminated) {
-      if (metadata.over) {
-        self.message(false); // You lose
+      if (metadata.isMenu) {
+        self.message("menu"); // You lose
+      } else if (metadata.over) {
+        self.message("lose"); // You win!
       } else if (metadata.won) {
-        self.message(true); // You win!
+        self.message("won"); //show menu
       }
     }
 
   });
 };
+
+//setup the game grid
+HTMLActuator.prototype.setupGameGrid = function (size) {
+  var classesRow    = [ "grid-row" ];
+  var classesCell   = [ "grid-cell" ];
+  this.clearContainer(this.gridContainer);
+  
+  for (var x = 0 ; x < size; x++) {
+    var gridRow   = document.createElement("div");
+    for (var y = 0 ; y < size; y++) {
+      var gridCell  = document.createElement("div");
+      //apply grid-cell
+      this.applyClasses(gridCell, classesCell);
+      gridRow.appendChild(gridCell);
+    };
+    //apply grid-row class
+    this.applyClasses(gridRow, classesRow);
+    // Put the tile on the board
+    this.gridContainer.appendChild(gridRow);  
+  };
+};
+
 
 // Continues the game (both restart and keep playing)
 HTMLActuator.prototype.continueGame = function () {
@@ -138,9 +164,20 @@ HTMLActuator.prototype.updateTimer = function (time) {
   this.timerContainer.textContent = "00:0" + time;
 };
 
-HTMLActuator.prototype.message = function (won) {
-  var type    = won ? "game-won" : "game-over";
-  var message = won ? "You win!" : "Game over!";
+HTMLActuator.prototype.message = function (status) {
+  var type = null;
+  var message = null;
+
+  if (status === "won") {
+    type = "game-won";
+    message = "You Win!";
+  } else if (status === "lose") {
+    type = "game-over";
+    message = "Game over!";
+  } else {
+    type = "game-menu";
+    message = "Menu";
+  }
 
   if (typeof ga !== "undefined") {
     ga("send", "event", "game", "end", type, this.score);
@@ -149,15 +186,18 @@ HTMLActuator.prototype.message = function (won) {
   this.messageContainer.classList.add(type);
   this.messageContainer.getElementsByTagName("p")[0].textContent = message;
 
-  this.clearContainer(this.sharingContainer);
-  this.sharingContainer.appendChild(this.scoreTweetButton());
-  twttr.widgets.load();
+  if (type !== "game-menu") {
+    this.clearContainer(this.sharingContainer);
+    this.sharingContainer.appendChild(this.scoreTweetButton());
+    twttr.widgets.load();
+  } 
 };
 
 HTMLActuator.prototype.clearMessage = function () {
   // IE only takes one value to remove at a time.
   this.messageContainer.classList.remove("game-won");
   this.messageContainer.classList.remove("game-over");
+  this.messageContainer.classList.remove("game-menu");
 };
 
 HTMLActuator.prototype.scoreTweetButton = function () {
