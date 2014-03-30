@@ -678,6 +678,10 @@ hr {
   padding-top: 10px;
 }
 
+.main-menu-lower {
+  margin-top: 20px;
+}
+
 .restart-button {
   display: inline-block;
   background: #8f7a66;
@@ -806,6 +810,9 @@ hr {
       margin-left: 9px; }
       .game-message a.keep-playing-button {
         display: none; }
+      .game-message div.lower {
+        display: none;
+      }
     .game-message .score-sharing {
       display: inline-block;
       vertical-align: middle;

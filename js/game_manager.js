@@ -13,6 +13,7 @@ function GameManager(InputManager, Actuator, StorageManager) {
 
   this.inputManager.on("move", this.move.bind(this));
   this.inputManager.on("restart", this.restart.bind(this));
+  this.inputManager.on("begin", this.beginGame.bind(this));
   this.inputManager.on("keepPlaying", this.keepPlaying.bind(this));
   this.inputManager.on("difficultyEasy", this.gamemodeDifficultyEasy.bind(this));
   this.inputManager.on("difficultyMedium", this.gamemodeDifficultyMedium.bind(this));
@@ -40,7 +41,7 @@ function GameManager(InputManager, Actuator, StorageManager) {
       "startMultiplier": 3.0
     }
   };
-  this.isMenu = false;
+  this.isMenu = true;
   this.gameModeAddEnabled = false;
   this.gameModeRemoveEnabled = false;
   this.gameModeDifficulty = "medium";
@@ -51,11 +52,20 @@ function GameManager(InputManager, Actuator, StorageManager) {
 
 // Restart the game
 GameManager.prototype.restart = function () {
+  console.log("Restart Game");
   this.isMenu = true;
+  this.setup();
+  this.clearTimers();
+};
+
+GameManager.prototype.beginGame = function () {
+  this.isMenu = false;
   this.storageManager.clearGameState();
   this.actuator.continueGame(); // Clear the game won/lost message
-  this.setup();
+  this.setup();  
 };
+
+
 
 // Keep playing after winning (allows going over 2048)
 GameManager.prototype.keepPlaying = function () {
@@ -74,7 +84,8 @@ GameManager.prototype.isGameTerminated = function () {
 
 // Display the menu
 GameManager.prototype.displayMenu = function () {
-  
+  this.isMenu = true;
+  this.clearTimers();
 };
 
 
@@ -93,6 +104,14 @@ GameManager.prototype.setup = function () {
     this.over        = previousState.over;
     this.won         = previousState.won;
     this.keepPlaying = previousState.keepPlaying;
+  } else if (this.isMenu) {
+    this.grid        = new Grid(this.size);
+    this.score       = 0;
+    this.over        = false;
+    this.won         = false;
+    this.keepPlaying = false;
+    this.timerCurrentSeconds = this.timerMaxSeconds;
+    this.actuator.setupGameGrid(this.size);
   } else {
     this.grid        = new Grid(this.size);
     this.score       = 0;
@@ -104,11 +123,11 @@ GameManager.prototype.setup = function () {
     this.actuator.setupGameGrid(this.size);
     // Add the initial tiles
     this.addStartTiles();
-
-
   }
   //start the timer
-  this.timerObj = window.setInterval(this.timer.bind( this ), 1000 );
+  if (!this.isMenu) {
+    this.timerObj = window.setInterval(this.timer.bind( this ), 1000 );
+  }
 
   // Update the actuator
   this.actuate();
@@ -139,7 +158,7 @@ GameManager.prototype.timer = function() {
           console.log("Game Over");
           this.over = true; // Game over!
           this.actuate(this.grid, this);
-          clearInterval(this.timerObj);
+          this.clearTimers();
           this.timerCurrentSeconds = 0;
         }
 
@@ -223,6 +242,11 @@ GameManager.prototype.moveTile = function (tile, cell) {
   tile.updatePosition(cell);
 };
 
+GameManager.prototype.clearTimers = function () {
+  clearInterval(this.timerObj);
+};
+
+
 // Move tiles on the grid in the specified direction
 GameManager.prototype.move = function (direction) {
   // 0: up, 1: right, 2: down, 3: left
@@ -264,7 +288,10 @@ GameManager.prototype.move = function (direction) {
           self.score += merged.value;
 
           // The mighty 2048 tile
-          if (merged.value === 8192) self.won = true;
+          if (merged.value === 128) {
+            self.won = true;
+            self.clearTimers();
+          }
         } else {
           self.moveTile(tile, positions.farthest);
         }

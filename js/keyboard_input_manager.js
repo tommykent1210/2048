@@ -23,6 +23,7 @@ KeyboardInputManager.prototype.on = function (event, callback) {
 };
 
 KeyboardInputManager.prototype.emit = function (event, data) {
+  //console.log(event);
   var callbacks = this.events[event];
   if (callbacks) {
     callbacks.forEach(function (callback) {
@@ -72,8 +73,8 @@ KeyboardInputManager.prototype.listen = function () {
   });
 
   // Respond to button presses
-  this.bindButtonPress(".retry-button", this.restart);
   this.bindButtonPress(".restart-button", this.restart);
+  this.bindButtonPress(".begin-button", this.begin);
   this.bindButtonPress(".keep-playing-button", this.keepPlaying);
   this.bindButtonPress(".gamemode-difficulty-easy", this.difficultyEasy);
   this.bindButtonPress(".gamemode-difficulty-medium", this.difficultyMedium);
@@ -144,6 +145,11 @@ KeyboardInputManager.prototype.listen = function () {
 KeyboardInputManager.prototype.restart = function (event) {
   event.preventDefault();
   this.emit("restart");
+};
+
+KeyboardInputManager.prototype.begin = function (event) {
+  event.preventDefault();
+  this.emit("begin");
 };
 
 //gamemode related stuff

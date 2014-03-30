@@ -5,40 +5,50 @@ function HTMLActuator() {
   this.messageContainer = document.querySelector(".game-message");
   this.sharingContainer = document.querySelector(".score-sharing");
   this.timerContainer   = document.querySelector(".timer-container");
-  this.gridContainer   = document.querySelector(".grid-container");
+  this.gridContainer    = document.querySelector(".grid-container");
+  this.menuContainer    = document.querySelector(".main-menu");
 
   this.score = 0;
 }
 
 HTMLActuator.prototype.actuate = function (grid, metadata) {
   var self = this;
-  console.log(metadata.isMenu);
+  if (metadata.isMenu) {
+    console.log("Dispaly Menu");
+    window.requestAnimationFrame(function () {
+      self.clearContainer(self.tileContainer);
+      self.message("menu");
+    }); 
+  } else {
+    window.requestAnimationFrame(function () {
+      self.clearContainer(self.tileContainer);
 
-  window.requestAnimationFrame(function () {
-    self.clearContainer(self.tileContainer);
-
-    grid.cells.forEach(function (column) {
-      column.forEach(function (cell) {
-        if (cell) {
-          self.addTile(cell);
-        }
+      grid.cells.forEach(function (column) {
+        column.forEach(function (cell) {
+          if (cell) {
+            self.addTile(cell);
+          }
+        });
       });
-    });
 
-    self.updateScore(metadata.score);
-    self.updateBestScore(metadata.bestScore);
+      self.updateScore(metadata.score);
+      self.updateBestScore(metadata.bestScore);
 
-    if (metadata.terminated) {
-      if (metadata.isMenu) {
-        self.message("menu"); // You lose
-      } else if (metadata.over) {
-        self.message("lose"); // You win!
-      } else if (metadata.won) {
-        self.message("won"); //show menu
+      if (metadata.terminated) {
+        if (metadata.isMenu) {
+          console.log("Gamestate: Menu");
+          self.message("menu"); // You lose
+        } else if (metadata.over) {
+          console.log("Gamestate: Over");
+          self.message("lose"); // You win!
+        } else if (metadata.won) {
+          console.log("Gamestate: Won");
+          self.message("won"); //show menu
+        }
       }
-    }
 
-  });
+    });
+  }
 };
 
 //setup the game grid
@@ -171,12 +181,15 @@ HTMLActuator.prototype.message = function (status) {
   if (status === "won") {
     type = "game-won";
     message = "You Win!";
+    this.messageContainer.classList.add("menu-hidden");
   } else if (status === "lose") {
     type = "game-over";
     message = "Game over!";
+    this.messageContainer.classList.add("menu-hidden");
   } else {
     type = "game-menu";
     message = "Menu";
+    this.messageContainer.classList.remove("menu-hidden");
   }
 
   if (typeof ga !== "undefined") {
