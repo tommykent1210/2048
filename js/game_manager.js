@@ -125,6 +125,7 @@ GameManager.prototype.setup = function () {
   
   var previousState = this.storageManager.getGameState();
 
+  this.actuator.setupActuator(this.size, this.gameModeDifficulty);
   //this.storageManager.clearBestScore();
   // Reload the game from a previous game if present
   if (previousState) {
@@ -163,6 +164,8 @@ GameManager.prototype.setup = function () {
     }
   }
 
+  //setup multiplier
+  this.gameModeMultiplier = this.difficultySettings[this.gameModeDifficulty]["startMultiplier"];
   // Update the actuator
   this.actuate();
 };
@@ -261,7 +264,8 @@ GameManager.prototype.actuate = function () {
     terminated: this.isGameTerminated(),
     isMenu:     this.isMenu,
     difficulty: this.gameModeDifficulty,
-    size:       this.size  
+    size:       this.size,
+    multiplier: this.gameModeMultiplier   
   });
 
 };
@@ -337,7 +341,7 @@ GameManager.prototype.move = function (direction) {
           tile.updatePosition(positions.next);
 
           // Update the score
-          self.score += merged.value;
+          self.score += merged.value * self.gameModeMultiplier;
 
           // The mighty 2048 tile
           if (merged.value === 8192) {

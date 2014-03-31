@@ -2,6 +2,7 @@ function HTMLActuator() {
   this.tileContainer    = document.querySelector(".tile-container");
   this.scoreContainer   = document.querySelector(".score-container");
   this.bestContainer    = document.querySelector(".best-container");
+  this.multiplierContainer = document.querySelector(".multiplier-container");
   this.messageContainer = document.querySelector(".game-message");
   this.sharingContainer = document.querySelector(".score-sharing");
   this.timerContainer   = document.querySelector(".timer-container");
@@ -13,16 +14,12 @@ function HTMLActuator() {
   this.score = 0;
   this.difficulty = null;
   this.size = null;
+  this.sizeX = null;
 }
 
 HTMLActuator.prototype.actuate = function (grid, metadata) {
   var self = this;
   
-  //if the difficulty and size arent set, set them
-  if (this.difficulty === null || this.size === null) {
-    this.difficulty = metadata.difficulty;
-    this.size       = metadata.size + "x" + metadata.size;
-  }
 
   if (metadata.isMenu) {
     console.log("Dispaly Menu");
@@ -44,6 +41,7 @@ HTMLActuator.prototype.actuate = function (grid, metadata) {
 
       self.updateScore(metadata.score);
       self.updateBestScore(metadata.bestScore);
+      self.updateMultiplier(metadata.multiplier);
 
       if (metadata.terminated) {
         if (metadata.isMenu) {
@@ -62,10 +60,17 @@ HTMLActuator.prototype.actuate = function (grid, metadata) {
   }
 };
 
+//setup the Actuator
+HTMLActuator.prototype.setupActuator = function (size, difficulty) {
+  this.size       = size;
+  this.sizeX      = size + "x" + size;
+  this.difficulty = difficulty;
+}
+
 //setup the game grid
 HTMLActuator.prototype.setupGameGrid = function (size) {
   var classesRow    = [ "grid-row" ];
-  var classesCell   = [ "grid-cell" ];
+  var classesCell   = [ "grid-cell-" + size ];
   this.clearContainer(this.gridContainer);
   
   //apply size classes
@@ -142,7 +147,7 @@ HTMLActuator.prototype.addTile = function (tile) {
   
   this.applyClasses(wrapper, classes);
 
-  inner.classList.add("tile-inner");
+  inner.classList.add("tile-inner-" + this.size);
   inner.textContent = tile.value;
 
   if (tile.previousPosition) {
@@ -181,7 +186,7 @@ HTMLActuator.prototype.normalizePosition = function (position) {
 
 HTMLActuator.prototype.positionClass = function (position) {
   position = this.normalizePosition(position);
-  return "tile-position-" + position.x + "-" + position.y;
+  return "tile-" + this.size + "-position-" + position.x + "-" + position.y;
 };
 
 HTMLActuator.prototype.updateScore = function (score) {
@@ -203,6 +208,10 @@ HTMLActuator.prototype.updateScore = function (score) {
 
 HTMLActuator.prototype.updateBestScore = function (bestScore) {
   this.bestContainer.textContent = bestScore;
+};
+
+HTMLActuator.prototype.updateMultiplier = function (multiplier) {
+  this.multiplierContainer.textContent = multiplier.toFixed(1) + "x";
 };
 
 HTMLActuator.prototype.updateTimer = function (time) {
@@ -267,7 +276,7 @@ HTMLActuator.prototype.scoreTweetButton = function () {
   tweet.setAttribute("data-counturl", "http://tommykent1210.github.io/8192/");
   tweet.textContent = "Tweet";
 
-  var text = "I scored " + this.score + " points at 8192 in " + this.difficulty + " " + this.size + " mode, a game where you " +
+  var text = "I scored " + this.score + " points at 8192 in " + this.difficulty + " " + this.sizeX + " mode, a game where you " +
              "join numbers! #8192game";
   tweet.setAttribute("data-text", text);
 
