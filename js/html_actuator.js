@@ -11,10 +11,19 @@ function HTMLActuator() {
   this.gameContainer    = document.querySelector(".game-container");
 
   this.score = 0;
+  this.difficulty = null;
+  this.size = null;
 }
 
 HTMLActuator.prototype.actuate = function (grid, metadata) {
   var self = this;
+  
+  //if the difficulty and size arent set, set them
+  if (this.difficulty === null || this.size === null) {
+    this.difficulty = metadata.difficulty;
+    this.size       = metadata.size + "x" + metadata.size;
+  }
+
   if (metadata.isMenu) {
     console.log("Dispaly Menu");
     window.requestAnimationFrame(function () {
@@ -258,8 +267,8 @@ HTMLActuator.prototype.scoreTweetButton = function () {
   tweet.setAttribute("data-counturl", "http://tommykent1210.github.io/8192/");
   tweet.textContent = "Tweet";
 
-  var text = "I scored " + this.score + " points at 8192, a game where you " +
-             "join numbers to score high! #8192game";
+  var text = "I scored " + this.score + " points at 8192 in " + this.difficulty + " " + this.size + " mode, a game where you " +
+             "join numbers! #8192game";
   tweet.setAttribute("data-text", text);
 
   return tweet;

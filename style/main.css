@@ -82,7 +82,7 @@ h1.title {
   float: right;
   text-align: right; }
 
-.score-container, .best-container {
+.score-container, .best-container, .add-container {
   position: relative;
   display: inline-block;
   background: #bbada0;
@@ -95,13 +95,13 @@ h1.title {
   color: white;
   margin-top: 8px;
   text-align: center; }
-  .score-container:after, .best-container:after {
+  .score-container:after, .best-container:after, .add-container:after {
     position: absolute;
     width: 100%;
     top: 10px;
     left: 0;
     text-transform: uppercase;
-    font-size: 13px;
+    font-size: 16px;
     line-height: 13px;
     text-align: center;
     color: #eee4da; }
@@ -126,6 +126,9 @@ h1.title {
 
 .best-container:after {
   content: "Best"; }
+
+.add-container:after {
+  content: "Add"; }
 
 p {
   margin-top: 0;
@@ -187,18 +190,20 @@ hr {
 
   100% {
     margin-top: 20%; } }
+
 .game-size-four {
     width: 500px;
-    height: 500px;
+    height: 582px;
 }
 .game-size-five {
     width: 622px;
-    height: 622px;
+    height: 704px;
 }
 .game-size-six {
     width: 744px;
-    height: 744px;
+    height: 825px;
 }
+
 .game-container {
 
   position: relative;
@@ -300,6 +305,17 @@ hr {
   background: #D1C3B6 !important;
   color: #AD9782 !important;
 }
+
+.info-pane {
+  display: block;
+  width: auto;
+  height: 80px;
+}
+
+.info-item {
+  padding: 20px;
+}
+
 .grid-container {
   position: absolute;
   z-index: 1; }
@@ -685,7 +701,7 @@ hr {
 .game-intro {
   float: left;
   line-height: 42px;
-  margin-bottom: 0; }
+  margin-bottom: 20px; }
 
 .menu-hidden {
   display: none;
