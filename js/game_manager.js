@@ -298,7 +298,7 @@ GameManager.prototype.recalculateMultiplier = function() {
   //get percentage fill based multiplier
   var pcM = 1 - this.getPercentageGridFilled();
 
-  if (this.gamemodeAddToggle) {
+  if (this.gameModeAddEnabled) {
     multiplier += 1;
   }
 
@@ -308,6 +308,7 @@ GameManager.prototype.recalculateMultiplier = function() {
     multiplier += 0.5;
   }
 
+  //console.log("m=" + multiplier + ", pcM=" + pcM + ", baseM=" + baseM);
   //set the multiplier
   this.gameModeMultiplier = multiplier + baseM + pcM;
 }
