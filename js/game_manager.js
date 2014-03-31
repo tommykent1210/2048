@@ -32,17 +32,20 @@ function GameManager(InputManager, Actuator, StorageManager) {
 
   this.difficultySettings = {
     "easy":{
-      "timerAddMaxSeconds": 10,
+      "timerAddMaxSeconds": 9,
+      "gamemodeAddAmount": 1,
       "timerRemoveMaxSeconds": 30,
       "startMultiplier": 1.0
     },
     "medium":{
-      "timerAddMaxSeconds": 6,
+      "timerAddMaxSeconds": 5,
+      "gamemodeAddAmount": 1,
       "timerRemoveMaxSeconds": 20,
       "startMultiplier": 2.0
     },
     "hard":{
-      "timerAddMaxSeconds": 3,
+      "timerAddMaxSeconds": 2,
+      "gamemodeAddAmount": 2,
       "timerRemoveMaxSeconds": 10,
       "startMultiplier": 3.0
     }
@@ -146,6 +149,7 @@ GameManager.prototype.setup = function () {
     this.over        = false;
     this.won         = false;
     this.keepPlaying = false;
+    this.timerMaxSeconds = this.difficultySettings[this.gameModeDifficulty]["timerAddMaxSeconds"];
     this.timerCurrentSeconds = this.timerMaxSeconds;
     this.actuator.updateTimer(this.timerCurrentSeconds);
     this.actuator.setupGameGrid(this.size);
@@ -191,23 +195,25 @@ GameManager.prototype.timer = function() {
       
     if (this.timerCurrentSeconds <= 0) {
        this.timerCurrentSeconds = this.timerMaxSeconds;
-       if (this.grid.cellsAvailable()) {
-        
-        var tile = new Tile(this.grid.randomAvailableCell(), "X");
+       for (var i =0; i <= this.difficultySettings[this.gameModeDifficulty]["gamemodeAddAmount"] - 1; i++) {
 
-        this.grid.insertTile(tile);
-        this.actuator.addTile(tile);
-        this.storageManager.setGameState(this.serialize());
-        if (!this.movesAvailable()) {
-          console.log("Game Over");
-          this.over = true; // Game over!
-          this.actuate(this.grid, this);
-          this.clearTimers();
-          this.timerCurrentSeconds = 0;
+         if (this.grid.cellsAvailable()) {
+          
+          var tile = new Tile(this.grid.randomAvailableCell(), "X");
+
+          this.grid.insertTile(tile);
+          this.actuator.addTile(tile);
+          this.storageManager.setGameState(this.serialize());
+          if (!this.movesAvailable()) {
+            console.log("Game Over");
+            this.over = true; // Game over!
+            this.actuate(this.grid, this);
+            this.clearTimers();
+            this.timerCurrentSeconds = 0;
+          }
+
+         }
         }
-
-       }
-
        //console.log('Add new tile...');
     }
     this.timerCurrentSeconds = this.timerCurrentSeconds - 1;
