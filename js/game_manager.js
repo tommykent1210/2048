@@ -48,6 +48,7 @@ function GameManager(InputManager, Actuator, StorageManager) {
   this.gameModeMultiplier = 1.0;
 
     //reset the game menu
+
   this.resetGameMenu();
   this.setup();
 }
@@ -98,7 +99,7 @@ GameManager.prototype.setup = function () {
   
   var previousState = this.storageManager.getGameState();
 
-
+  //this.storageManager.clearBestScore();
   // Reload the game from a previous game if present
   if (previousState) {
     this.actuator.setupGameGrid(previousState.grid.size);
@@ -303,7 +304,7 @@ GameManager.prototype.move = function (direction) {
           self.score += merged.value;
 
           // The mighty 2048 tile
-          if (merged.value === 128) {
+          if (merged.value === 8192) {
             self.won = true;
             self.clearTimers();
           }

@@ -46,9 +46,10 @@ LocalStorageManager.prototype.getBestScore = function (type, difficulty) {
   try {
     var scoresObj   = JSON.parse(scoresData);
     var size        = type + "x" + type;
-    if (this.isArray(scoresObj)) {
+    if (scoresObj.constructor == Object) {
       return scoresObj[size][difficulty] || 0;
     } else {
+      this.clearBestScore();
       return 0;
     }
     
@@ -67,6 +68,10 @@ LocalStorageManager.prototype.isArray = function(what) {
     return Object.prototype.toString.call(what) === '[object Array]';
 }
 
+LocalStorageManager.prototype.clearBestScore = function () {
+  this.storage.removeItem(this.bestScoreKey);
+};
+
 LocalStorageManager.prototype.setBestScore = function (score, type, difficulty) {
   var currentScores   = this.getBestScoreArray();
   var scoresObj       = null;
@@ -74,7 +79,7 @@ LocalStorageManager.prototype.setBestScore = function (score, type, difficulty) 
   console.log(currentScores);
   if (currentScores !== 0) {
       scoresObj = JSON.parse(currentScores);
-      scoresObj[type][difficulty] = score; //TO FIX!
+      scoresObj[size][difficulty] = score; //TO FIX!
   } else {
     scoresObj = {
       "4x4" : {
