@@ -77,7 +77,7 @@ LocalStorageManager.prototype.setBestScore = function (score, type, difficulty) 
   var currentScores   = this.getBestScoreArray();
   var scoresObj       = null;
   var size            = type + "x" + type; 
-  console.log(currentScores);
+  //console.log(currentScores);
   if (currentScores !== 0) {
       scoresObj = JSON.parse(currentScores);
       scoresObj[size][difficulty] = score; //TO FIX!
