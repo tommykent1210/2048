@@ -259,7 +259,9 @@ GameManager.prototype.actuate = function () {
     won:        this.won,
     bestScore:  this.storageManager.getBestScore(this.size, this.gameModeDifficulty),
     terminated: this.isGameTerminated(),
-    isMenu:     this.isMenu
+    isMenu:     this.isMenu,
+    difficulty: this.gameModeDifficulty,
+    size:       this.size  
   });
 
 };
