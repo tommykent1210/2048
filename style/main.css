@@ -296,6 +296,10 @@ hr {
     background: #C92D18 !important;
     color: #f9f6f2 !important;
  }
+.button-disabled {
+  background: #D1C3B6 !important;
+  color: #AD9782 !important;
+}
 .grid-container {
   position: absolute;
   z-index: 1; }

@@ -11,6 +11,12 @@ function GameManager(InputManager, Actuator, StorageManager) {
   this.timerObj = null;
   this.isDebug = true;
 
+  // maintain a storage version, if this is 
+  // higher than the current cookie storage
+  // then the cookie is deleted to allow changes
+  // in the storage manager. 
+  this.storageVersion = 1; 
+
   this.inputManager.on("move", this.move.bind(this));
   this.inputManager.on("restart", this.restart.bind(this));
   this.inputManager.on("begin", this.beginGame.bind(this));
@@ -47,11 +53,28 @@ function GameManager(InputManager, Actuator, StorageManager) {
   this.gameModeDifficulty = "medium";
   this.gameModeMultiplier = 1.0;
 
-    //reset the game menu
+  //perform storage integrity check
+  this.verifyStorageController();
 
+  //reset the game menu
   this.resetGameMenu();
+
+  //setup the game and grid
   this.setup();
 }
+
+
+// Integrity check of the storage controller
+GameManager.prototype.verifyStorageController = function () {
+  //if the storage version is invalid clear all game data from the cookie
+  if (this.storageManager.getStorageVersion() < this.storageVersion) {
+    console.log("New storage manager version, current version wiped");
+    this.storageManager.clearBestScore();
+    this.storageManager.clearGameState();
+    this.storageManager.setStorageVersion(this.storageVersion);
+  }
+};
+
 
 // Restart the game
 GameManager.prototype.restart = function () {
@@ -131,7 +154,9 @@ GameManager.prototype.setup = function () {
   }
   //start the timer
   if (!this.isMenu) {
-    this.timerObj = window.setInterval(this.timer.bind( this ), 1000 );
+    if (this.gameModeAddEnabled === true) {
+      this.timerObj = window.setInterval(this.timer.bind( this ), 1000 );
+    }
   }
 
   // Update the actuator
@@ -141,12 +166,15 @@ GameManager.prototype.setup = function () {
 GameManager.prototype.resetGameMenu = function () {
   this.gameModeDifficulty = "medium";
   this.size = 5;
+  this.gameModeAddEnabled = false;
+  this.gameModeRemoveEnabled = false;
   this.actuator.deactivateButton(".gamemode-difficulty-easy");
   this.actuator.activateButton(".gamemode-difficulty-medium");
   this.actuator.deactivateButton(".gamemode-difficulty-hard");
   this.actuator.deactivateButton(".gamemode-size-four");
   this.actuator.activateButton(".gamemode-size-five");
   this.actuator.deactivateButton(".gamemode-size-six");
+  this.actuator.deactivateButton(".gamemode-add");
 }
 
 // Set up the initial tiles to start the game with
@@ -480,8 +508,10 @@ GameManager.prototype.gamemodeSizeSix = function () {
 GameManager.prototype.gamemodeAddToggle = function () {
   if (this.gameModeAddEnabled === true) {
     this.gameModeAddEnabled = false;
+    this.actuator.deactivateButton(".gamemode-add");
   } else {
     this.gameModeAddEnabled = true;
+    this.actuator.activateButton(".gamemode-add");
   }
   if (this.isDebug === true) {
     console.log("Button Press: gamemodeAddToggle");
