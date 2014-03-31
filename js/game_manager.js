@@ -270,6 +270,48 @@ GameManager.prototype.actuate = function () {
 
 };
 
+
+//get percentage of cells in use
+GameManager.prototype.getPercentageGridFilled = function() {
+  var tilesInUse = 0;
+  var tilesTotal = this.size * this.size;
+  this.grid.cells.forEach(function (column) {
+    column.forEach(function (cell) {
+      if (cell) {
+        tilesInUse += 1;
+      }
+    });
+  });
+
+  if (tilesInUse > 0) {
+    return tilesInUse / tilesTotal;
+  } else {
+    return 0;
+  }
+}
+
+//recalculate multiplier
+GameManager.prototype.recalculateMultiplier = function() {
+  var multiplier  = 0;
+  var baseM       = this.difficultySettings[this.gameModeDifficulty]["startMultiplier"];
+
+  //get percentage fill based multiplier
+  var pcM = 1 - this.getPercentageGridFilled();
+
+  if (this.gamemodeAddToggle) {
+    multiplier += 1;
+  }
+
+  if (this.size === 4) {
+    multiplier += 1;
+  } else if (this.size === 5) {
+    multiplier += 0.5;
+  }
+
+  //set the multiplier
+  this.gameModeMultiplier = multiplier + baseM + pcM;
+}
+
 // Represent the current game as an object
 GameManager.prototype.serialize = function () {
   return {
@@ -341,7 +383,7 @@ GameManager.prototype.move = function (direction) {
           tile.updatePosition(positions.next);
 
           // Update the score
-          self.score += merged.value * self.gameModeMultiplier;
+          self.score += Math.round(merged.value * self.gameModeMultiplier);
 
           // The mighty 2048 tile
           if (merged.value === 8192) {
@@ -360,6 +402,9 @@ GameManager.prototype.move = function (direction) {
   });
 
   if (moved) {
+    //recalculate multiplier
+    this.recalculateMultiplier();
+
     if (Math.random() < this.spawnChance) {
       this.addRandomTile();
     }
@@ -449,9 +494,11 @@ GameManager.prototype.tileMatchesAvailable = function () {
   return false;
 };
 
+//check if positions are equal
 GameManager.prototype.positionsEqual = function (first, second) {
   return first.x === second.x && first.y === second.y;
 };
+
 
 //Game Mode Stuff
 
