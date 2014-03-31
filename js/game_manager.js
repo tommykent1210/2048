@@ -1,5 +1,5 @@
-function GameManager(size, InputManager, Actuator, StorageManager) {
-  this.size           = size; // Size of the grid
+function GameManager(InputManager, Actuator, StorageManager) {
+  this.size           = 5; // Size of the grid
   this.inputManager   = new InputManager;
   this.storageManager = new StorageManager;
   this.actuator       = new Actuator;
@@ -9,20 +9,67 @@ function GameManager(size, InputManager, Actuator, StorageManager) {
   this.timerMaxSeconds   = 3;
   this.timerCurrentSeconds  = 3;
   this.timerObj = null;
+  this.isDebug = true;
 
   this.inputManager.on("move", this.move.bind(this));
   this.inputManager.on("restart", this.restart.bind(this));
+  this.inputManager.on("begin", this.beginGame.bind(this));
   this.inputManager.on("keepPlaying", this.keepPlaying.bind(this));
+  this.inputManager.on("difficultyEasy", this.gamemodeDifficultyEasy.bind(this));
+  this.inputManager.on("difficultyMedium", this.gamemodeDifficultyMedium.bind(this));
+  this.inputManager.on("difficultyHard", this.gamemodeDifficultyHard.bind(this));
+  this.inputManager.on("sizeFour", this.gamemodeSizeFour.bind(this));
+  this.inputManager.on("sizeFive", this.gamemodeSizeFive.bind(this));
+  this.inputManager.on("sizeSix", this.gamemodeSizeSix.bind(this));
+  this.inputManager.on("gmAdd", this.gamemodeAddToggle.bind(this));
+  this.inputManager.on("gmRemove", this.gamemodeRemoveToggle.bind(this));
 
+  this.difficultySettings = {
+    "easy":{
+      "timerAddMaxSeconds": 10,
+      "timerRemoveMaxSeconds": 30,
+      "startMultiplier": 1.0
+    },
+    "medium":{
+      "timerAddMaxSeconds": 6,
+      "timerRemoveMaxSeconds": 20,
+      "startMultiplier": 2.0
+    },
+    "hard":{
+      "timerAddMaxSeconds": 3,
+      "timerRemoveMaxSeconds": 10,
+      "startMultiplier": 3.0
+    }
+  };
+  this.isMenu = true;
+  this.gameModeAddEnabled = false;
+  this.gameModeRemoveEnabled = false;
+  this.gameModeDifficulty = "medium";
+  this.gameModeMultiplier = 1.0;
+
+    //reset the game menu
+
+  this.resetGameMenu();
   this.setup();
 }
 
 // Restart the game
 GameManager.prototype.restart = function () {
+  console.log("Restart Game");
+  this.resetGameMenu();
+  this.isMenu = true;
+  this.setup();
+  this.clearTimers();
+};
+
+GameManager.prototype.beginGame = function () {
+  this.isMenu = false;
   this.storageManager.clearGameState();
   this.actuator.continueGame(); // Clear the game won/lost message
-  this.setup();
+  this.setup();  
 };
+
+
 
 // Keep playing after winning (allows going over 2048)
 GameManager.prototype.keepPlaying = function () {
@@ -39,20 +86,37 @@ GameManager.prototype.isGameTerminated = function () {
   }
 };
 
+// Display the menu
+GameManager.prototype.displayMenu = function () {
+  this.isMenu = true;
+  this.clearTimers();
+};
+
 
 
 // Set up the game
 GameManager.prototype.setup = function () {
+  
   var previousState = this.storageManager.getGameState();
 
+  //this.storageManager.clearBestScore();
   // Reload the game from a previous game if present
   if (previousState) {
+    this.actuator.setupGameGrid(previousState.grid.size);
     this.grid        = new Grid(previousState.grid.size,
                                 previousState.grid.cells); // Reload grid
     this.score       = previousState.score;
     this.over        = previousState.over;
     this.won         = previousState.won;
     this.keepPlaying = previousState.keepPlaying;
+  } else if (this.isMenu) {
+    this.grid        = new Grid(this.size);
+    this.score       = 0;
+    this.over        = false;
+    this.won         = false;
+    this.keepPlaying = false;
+    this.timerCurrentSeconds = this.timerMaxSeconds;
+    this.actuator.setupGameGrid(this.size);
   } else {
     this.grid        = new Grid(this.size);
     this.score       = 0;
@@ -61,19 +125,29 @@ GameManager.prototype.setup = function () {
     this.keepPlaying = false;
     this.timerCurrentSeconds = this.timerMaxSeconds;
     this.actuator.updateTimer(this.timerCurrentSeconds);
-
+    this.actuator.setupGameGrid(this.size);
     // Add the initial tiles
     this.addStartTiles();
-
-
   }
   //start the timer
-  this.timerObj = window.setInterval(this.timer.bind( this ), 1000 );
-  
-  
+  if (!this.isMenu) {
+    this.timerObj = window.setInterval(this.timer.bind( this ), 1000 );
+  }
+
   // Update the actuator
   this.actuate();
 };
+
+GameManager.prototype.resetGameMenu = function () {
+  this.gameModeDifficulty = "medium";
+  this.size = 5;
+  this.actuator.deactivateButton(".gamemode-difficulty-easy");
+  this.actuator.activateButton(".gamemode-difficulty-medium");
+  this.actuator.deactivateButton(".gamemode-difficulty-hard");
+  this.actuator.deactivateButton(".gamemode-size-four");
+  this.actuator.activateButton(".gamemode-size-five");
+  this.actuator.deactivateButton(".gamemode-size-six");
+}
 
 // Set up the initial tiles to start the game with
 GameManager.prototype.addStartTiles = function () {
@@ -100,7 +174,7 @@ GameManager.prototype.timer = function() {
           console.log("Game Over");
           this.over = true; // Game over!
           this.actuate(this.grid, this);
-          clearInterval(this.timerObj);
+          this.clearTimers();
           this.timerCurrentSeconds = 0;
         }
 
@@ -132,23 +206,26 @@ GameManager.prototype.addRandomTile = function () {
 
 // Sends the updated grid to the actuator
 GameManager.prototype.actuate = function () {
-  if (this.storageManager.getBestScore() < this.score) {
-    this.storageManager.setBestScore(this.score);
+  if (this.storageManager.getBestScore(this.size, this.gameModeDifficulty) < this.score) {
+    this.storageManager.setBestScore(this.score, this.size, this.gameModeDifficulty);
   }
 
   // Clear the state when the game is over (game over only, not win)
   if (this.over) {
     this.storageManager.clearGameState();
+    this.ismenu = true;
   } else {
     this.storageManager.setGameState(this.serialize());
+    this.ismenu = false;
   }
 
   this.actuator.actuate(this.grid, {
     score:      this.score,
     over:       this.over,
     won:        this.won,
-    bestScore:  this.storageManager.getBestScore(),
-    terminated: this.isGameTerminated()
+    bestScore:  this.storageManager.getBestScore(this.size, this.gameModeDifficulty),
+    terminated: this.isGameTerminated(),
+    isMenu:     this.isMenu
   });
 
 };
@@ -180,6 +257,11 @@ GameManager.prototype.moveTile = function (tile, cell) {
   this.grid.cells[cell.x][cell.y] = tile;
   tile.updatePosition(cell);
 };
+
+GameManager.prototype.clearTimers = function () {
+  clearInterval(this.timerObj);
+};
+
 
 // Move tiles on the grid in the specified direction
 GameManager.prototype.move = function (direction) {
@@ -222,7 +304,10 @@ GameManager.prototype.move = function (direction) {
           self.score += merged.value;
 
           // The mighty 2048 tile
-          if (merged.value === 8192) self.won = true;
+          if (merged.value === 8192) {
+            self.won = true;
+            self.clearTimers();
+          }
         } else {
           self.moveTile(tile, positions.farthest);
         }
@@ -326,4 +411,90 @@ GameManager.prototype.tileMatchesAvailable = function () {
 
 GameManager.prototype.positionsEqual = function (first, second) {
   return first.x === second.x && first.y === second.y;
+};
+
+//Game Mode Stuff
+
+// Restart the game
+GameManager.prototype.gamemodeDifficultyEasy = function () {
+  this.gameModeDifficulty = "easy";
+  this.actuator.activateButton(".gamemode-difficulty-easy");
+  this.actuator.deactivateButton(".gamemode-difficulty-medium");
+  this.actuator.deactivateButton(".gamemode-difficulty-hard");
+
+  if (this.isDebug === true) {
+    console.log("Button Press: gamemodeDifficultyEasy");
+  }
+};
+// Restart the game
+GameManager.prototype.gamemodeDifficultyMedium = function () {
+  this.gameModeDifficulty = "medium";
+  this.actuator.deactivateButton(".gamemode-difficulty-easy");
+  this.actuator.activateButton(".gamemode-difficulty-medium");
+  this.actuator.deactivateButton(".gamemode-difficulty-hard");
+  if (this.isDebug === true) {
+    console.log("Button Press: gamemodeDifficultyMedium");
+  }
+};
+// Restart the game
+GameManager.prototype.gamemodeDifficultyHard = function () {
+  this.gameModeDifficulty = "hard";
+  this.actuator.deactivateButton(".gamemode-difficulty-easy");
+  this.actuator.deactivateButton(".gamemode-difficulty-medium");
+  this.actuator.activateButton(".gamemode-difficulty-hard");
+  if (this.isDebug === true) {
+    console.log("Button Press: gamemodeDifficultyHard");
+  }
+};
+// Restart the game
+GameManager.prototype.gamemodeSizeFour = function () {
+  this.size = 4;
+  this.actuator.activateButton(".gamemode-size-four");
+  this.actuator.deactivateButton(".gamemode-size-five");
+  this.actuator.deactivateButton(".gamemode-size-six");
+  if (this.isDebug === true) {
+    console.log("Button Press: gamemodeSizeFour");
+  }
+};
+// Restart the game
+GameManager.prototype.gamemodeSizeFive = function () {
+  this.size = 5;
+  this.actuator.deactivateButton(".gamemode-size-four");
+  this.actuator.activateButton(".gamemode-size-five");
+  this.actuator.deactivateButton(".gamemode-size-six");
+  if (this.isDebug === true) {
+    console.log("Button Press: gamemodeSizeFive");
+  }
+};
+// Restart the game
+GameManager.prototype.gamemodeSizeSix = function () {
+  this.size = 6;
+  this.actuator.deactivateButton(".gamemode-size-four");
+  this.actuator.deactivateButton(".gamemode-size-five");
+  this.actuator.activateButton(".gamemode-size-six");
+  if (this.isDebug === true) {
+    console.log("Button Press: gamemodeSizeSix");
+  }
+};
+// Restart the game
+GameManager.prototype.gamemodeAddToggle = function () {
+  if (this.gameModeAddEnabled === true) {
+    this.gameModeAddEnabled = false;
+  } else {
+    this.gameModeAddEnabled = true;
+  }
+  if (this.isDebug === true) {
+    console.log("Button Press: gamemodeAddToggle");
+  }
+};
+// Restart the game
+GameManager.prototype.gamemodeRemoveToggle = function () {
+  if (this.gameModeRemoveEnabled === true) {
+    this.gameModeRemoveEnabled = false;
+  } else {
+    this.gameModeRemoveEnabled = true;
+  }
+  if (this.isDebug === true) {
+    console.log("Button Press: gamemodeRemoveToggle");
+  }
 };

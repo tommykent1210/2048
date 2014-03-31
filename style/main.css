@@ -187,6 +187,14 @@ hr {
 
   100% {
     margin-top: 20%; } }
+.game-size-four {
+    width: 500px;
+    height: 500px;
+}
+.game-size-five {
+    width: 622px;
+    height: 622px;
+}
 .game-size-six {
     width: 744px;
     height: 744px;
@@ -209,6 +217,7 @@ hr {
   -webkit-box-sizing: border-box;
   -moz-box-sizing: border-box;
   box-sizing: border-box; }
+
 
 .game-message {
   display: none;
@@ -262,13 +271,13 @@ hr {
     vertical-align: middle;
     margin-left: 10px; }
   .game-message.game-won {
-    background: rgba(237, 194, 46, 0.5);
-    color: #f9f6f2; }
+    /*background: rgba(237, 194, 46, 0.5);
+    color: #f9f6f2; */}
     .game-message.game-won a.keep-playing-button {
       display: inline-block; }
-  .game-message.game-won, .game-message.game-over {
+  .game-message.game-won, .game-message.game-over, .game-message.game-menu {
     display: block; }
-    .game-message.game-won p, .game-message.game-over p {
+    .game-message.game-won p, .game-message.game-over p, .game-message.game-menu p {
       -webkit-animation: slide-up 1.5s ease-in-out 2500ms;
       -moz-animation: slide-up 1.5s ease-in-out 2500ms;
       animation: slide-up 1.5s ease-in-out 2500ms;
@@ -283,6 +292,10 @@ hr {
       -moz-animation-fill-mode: both;
       animation-fill-mode: both; }
 
+.button-active {
+    background: #C92D18 !important;
+    color: #f9f6f2 !important;
+ }
 .grid-container {
   position: absolute;
   z-index: 1; }
@@ -670,6 +683,18 @@ hr {
   line-height: 42px;
   margin-bottom: 0; }
 
+.menu-hidden {
+  display: none;
+}
+
+.main-menu div{
+  padding-top: 10px;
+}
+
+.main-menu-lower {
+  margin-top: 20px;
+}
+
 .restart-button {
   display: inline-block;
   background: #8f7a66;
@@ -798,6 +823,9 @@ hr {
       margin-left: 9px; }
       .game-message a.keep-playing-button {
         display: none; }
+      .game-message div.lower {
+        display: none;
+      }
     .game-message .score-sharing {
       display: inline-block;
       vertical-align: middle;
@@ -807,9 +835,9 @@ hr {
       color: #f9f6f2; }
       .game-message.game-won a.keep-playing-button {
         display: inline-block; }
-    .game-message.game-won, .game-message.game-over {
+    .game-message.game-won, .game-message.game-over, .game-message.game-menu {
       display: block; }
-      .game-message.game-won p, .game-message.game-over p {
+      .game-message.game-won p, .game-message.game-over p, .game-message.game-menu p {
         -webkit-animation: slide-up 1.5s ease-in-out 2500ms;
         -moz-animation: slide-up 1.5s ease-in-out 2500ms;
         animation: slide-up 1.5s ease-in-out 2500ms;
