@@ -82,12 +82,12 @@ h1.title {
   float: right;
   text-align: right; }
 
-.score-container, .best-container, .add-container, .multiplier-container {
+.score-container, .best-container, .add-container, .multiplier-container, .modes-container {
   position: relative;
   display: inline-block;
   background: #bbada0;
   padding: 15px 25px;
-  font-size: 25px;
+  font-size: 21px;
   height: 25px;
   line-height: 47px;
   font-weight: bold;
@@ -95,6 +95,16 @@ h1.title {
   color: white;
   margin-top: 8px;
   text-align: center; }
+
+  .modes-container p {
+    padding: 0px;
+    width: 100%;
+    text-transform: uppercase;
+    font-size: 16px;
+    line-height: 13px;
+    text-align: center;
+    color: #eee4da; 
+  }
   .score-container:after, .best-container:after, .add-container:after, .multiplier-container:after {
     position: absolute;
     width: 100%;
@@ -320,7 +330,7 @@ hr {
 }
 
 .info-item {
-  padding: 20px;
+  padding: 17px;
 }
 
 .grid-container {
