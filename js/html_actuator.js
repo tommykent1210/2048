@@ -10,6 +10,10 @@ function HTMLActuator() {
   this.menuContainer    = document.querySelector(".main-menu");
   this.rootContainer    = document.querySelector(".container");
   this.gameContainer    = document.querySelector(".game-container");
+  this.gameHeaderSizeContainer = document.querySelector(".game-header-size");
+  this.gameHeaderDifficultyContainer = document.querySelector(".game-header-difficulty");
+  this.gameHeaderAddContainer = document.querySelector(".game-header-add");
+  this.gameHeaderRemoveContainer = document.querySelector(".game-header-remove");
 
   this.score = 0;
   this.difficulty = null;
@@ -213,6 +217,34 @@ HTMLActuator.prototype.updateBestScore = function (bestScore) {
 HTMLActuator.prototype.updateMultiplier = function (multiplier) {
   this.multiplierContainer.textContent = multiplier.toFixed(1) + "x";
 };
+
+HTMLActuator.prototype.updateGameHeaderSize = function(size) {
+  this.gameHeaderSizeContainer.textContent = size + "x" + size;
+}
+
+HTMLActuator.prototype.updateGameHeaderDifficulty = function(difficulty) {
+  this.gameHeaderDifficultyContainer.textContent = difficulty;
+}
+
+HTMLActuator.prototype.updateGameHeaderAdd = function(value) {
+  if (value === true) {
+    this.gameHeaderAddContainer.classList.add("gm-active");
+    this.gameHeaderAddContainer.classList.remove("gm-inactive");
+  } else {
+    this.gameHeaderAddContainer.classList.remove("gm-active");
+    this.gameHeaderAddContainer.classList.add("gm-inactive");
+  }
+}
+
+HTMLActuator.prototype.updateGameHeaderRemove = function(value) {
+  if (value === true) {
+    this.gameHeaderRemoveContainer.classList.add("gm-active");
+    this.gameHeaderRemoveContainer.classList.remove("gm-inactive");
+  } else {
+    this.gameHeaderRemoveContainer.classList.remove("gm-active");
+    this.gameHeaderRemoveContainer.classList.add("gm-inactive");
+  }
+}
 
 HTMLActuator.prototype.updateTimer = function (time) {
   this.timerContainer.textContent = "00:0" + time;

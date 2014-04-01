@@ -15,7 +15,7 @@ function GameManager(InputManager, Actuator, StorageManager) {
   // higher than the current cookie storage
   // then the cookie is deleted to allow changes
   // in the storage manager. 
-  this.storageVersion = 1; 
+  this.storageVersion = 3; 
 
   this.inputManager.on("move", this.move.bind(this));
   this.inputManager.on("restart", this.restart.bind(this));
@@ -35,19 +35,19 @@ function GameManager(InputManager, Actuator, StorageManager) {
       "timerAddMaxSeconds": 9,
       "gamemodeAddAmount": 1,
       "timerRemoveMaxSeconds": 30,
-      "startMultiplier": 1.0
+      "startMultiplier": 0.2
     },
     "medium":{
       "timerAddMaxSeconds": 5,
       "gamemodeAddAmount": 1,
       "timerRemoveMaxSeconds": 20,
-      "startMultiplier": 2.0
+      "startMultiplier": 1.0
     },
     "hard":{
       "timerAddMaxSeconds": 2,
       "gamemodeAddAmount": 2,
       "timerRemoveMaxSeconds": 10,
-      "startMultiplier": 3.0
+      "startMultiplier": 2.0
     }
   };
   this.isMenu = true;
@@ -154,6 +154,12 @@ GameManager.prototype.setup = function () {
     this.timerCurrentSeconds = this.timerMaxSeconds;
     this.actuator.updateTimer(this.timerCurrentSeconds);
     this.actuator.setupGameGrid(this.size);
+    //change the title
+    this.actuator.updateGameHeaderDifficulty(this.gameModeDifficulty);
+    this.actuator.updateGameHeaderSize(this.size);
+    this.actuator.updateGameHeaderAdd(this.gameModeAddEnabled);
+    this.actuator.updateGameHeaderRemove(this.gameModeRemoveEnabled);
+
     // Add the initial tiles
     this.addStartTiles();
   }
@@ -165,7 +171,7 @@ GameManager.prototype.setup = function () {
   }
 
   //setup multiplier
-  this.gameModeMultiplier = this.difficultySettings[this.gameModeDifficulty]["startMultiplier"];
+  this.recalculateMultiplier();
   // Update the actuator
   this.actuate();
 };
