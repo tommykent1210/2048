@@ -82,10 +82,10 @@ h1.title {
   float: right;
   text-align: right; }
 
-.score-container, .best-container, .add-container, .multiplier-container, .modes-container {
+.score-container, .best-container, .add-container, .remove-container, .multiplier-container {
   position: relative;
   display: inline-block;
-  background: #bbada0;
+  background: #8f7a66;
   padding: 15px 25px;
   font-size: 21px;
   height: 25px;
@@ -96,33 +96,33 @@ h1.title {
   margin-top: 8px;
   text-align: center; }
 
-  .modes-container p {
+  .game-header {
     padding: 0px;
     width: 100%;
+    font-weight: bold;
     text-transform: uppercase;
     font-size: 16px;
     line-height: 13px;
     text-align: center;
     color: #eee4da; 
   }
-  .score-container:after, .best-container:after, .add-container:after, .multiplier-container:after {
+  .score-container:after, .best-container:after, .add-container:after, .remove-container:after, .multiplier-container:after {
     position: absolute;
     width: 100%;
     top: 10px;
     left: 0;
     text-transform: uppercase;
-    font-size: 16px;
+    font-size: 14px;
     line-height: 13px;
     text-align: center;
     color: #eee4da; }
   .score-container .score-addition, .best-container .score-addition {
     position: absolute;
     right: 30px;
-    color: red;
+    color: #C92D18; 
     font-size: 25px;
     line-height: 25px;
     font-weight: bold;
-    color: rgba(119, 110, 101, 0.9);
     z-index: 100;
     -webkit-animation: move-up 600ms ease-in;
     -moz-animation: move-up 600ms ease-in;
@@ -139,6 +139,8 @@ h1.title {
 
 .add-container:after {
   content: "Add"; }
+.remove-container:after {
+  content: "Remove"; }
 
 .multiplier-container:after {
   content: "Multiplier"; }
@@ -206,19 +208,28 @@ hr {
 
 .game-size-four {
     width: 500px;
-    height: 582px;
+    height: 588px;
 }
 .game-size-five {
     /*width: 622px;
     height: 704px;*/
     width: 500px;
-    height: 582px;
+    height: 588px;
 }
 .game-size-six {
     /*width: 744px;
     height: 825px;*/
     width: 500px;
-    height: 582px;
+    height: 588px;
+}
+
+.gm-active {
+  color: #C92D18; 
+}
+
+.gm-inactive {
+  color: #eee4da;
+  text-decoration: line-through; 
 }
 
 .game-container {
@@ -326,11 +337,13 @@ hr {
 .info-pane {
   display: block;
   width: auto;
-  height: 80px;
+  height:76px;
+  text-align: center;
 }
 
 .info-item {
-  padding: 17px;
+  padding: 16px;
+  width: 12%;
 }
 
 .grid-container {
