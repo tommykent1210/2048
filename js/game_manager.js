@@ -6,9 +6,6 @@ function GameManager(InputManager, Actuator, StorageManager) {
 
   this.startTiles     = 2;
   this.spawnChance    = 0.8;
-  this.timerMaxSeconds   = 3;
-  this.timerCurrentSeconds  = 3;
-  this.timerObj = null;
   this.isDebug = true;
 
   // maintain a storage version, if this is 
@@ -30,12 +27,23 @@ function GameManager(InputManager, Actuator, StorageManager) {
   this.inputManager.on("gmAdd", this.gamemodeAddToggle.bind(this));
   this.inputManager.on("gmRemove", this.gamemodeRemoveToggle.bind(this));
 
+  this.timers = {
+    "add": {
+      "object": null,
+      "currentSeconds": 0
+    },
+    "remove": {
+      "object": null,
+      "currentSeconds": 0
+    }
+  }
+
   this.difficultySettings = {
     "easy":{
       "timerAddMaxSeconds": 9,
       "gamemodeAddAmount": 1,
       "timerRemoveMaxSeconds": 30,
-      "startMultiplier": 0.2
+      "startMultiplier": 0.5
     },
     "medium":{
       "timerAddMaxSeconds": 5,
@@ -142,7 +150,8 @@ GameManager.prototype.setup = function () {
     this.over        = false;
     this.won         = false;
     this.keepPlaying = false;
-    this.timerCurrentSeconds = this.timerMaxSeconds;
+    this.timers["add"]["currentSeconds"] = this.difficultySettings[this.gameModeDifficulty]["timerAddMaxSeconds"];
+    this.timers["remove"]["currentSeconds"] = this.difficultySettings[this.gameModeDifficulty]["timerRemoveMaxSeconds"];
     this.actuator.setupGameGrid(this.size);
   } else {
     this.grid        = new Grid(this.size);
@@ -150,9 +159,10 @@ GameManager.prototype.setup = function () {
     this.over        = false;
     this.won         = false;
     this.keepPlaying = false;
-    this.timerMaxSeconds = this.difficultySettings[this.gameModeDifficulty]["timerAddMaxSeconds"];
-    this.timerCurrentSeconds = this.timerMaxSeconds;
-    this.actuator.updateTimer(this.timerCurrentSeconds);
+    this.timers["add"]["currentSeconds"] = this.difficultySettings[this.gameModeDifficulty]["timerAddMaxSeconds"];
+    this.timers["remove"]["currentSeconds"] = this.difficultySettings[this.gameModeDifficulty]["timerRemoveMaxSeconds"];
+    this.actuator.updateAddTimer(this.timers["add"]["currentSeconds"]);
+    this.actuator.updateRemoveTimer(this.timers["remove"]["currentSeconds"]);
     this.actuator.setupGameGrid(this.size);
     //change the title
     this.actuator.updateGameHeaderDifficulty(this.gameModeDifficulty);
@@ -166,7 +176,11 @@ GameManager.prototype.setup = function () {
   //start the timer
   if (!this.isMenu) {
     if (this.gameModeAddEnabled === true) {
-      this.timerObj = window.setInterval(this.timer.bind( this ), 1000 );
+
+      this.timers["add"]["object"] = window.setInterval(this.addTimer.bind( this ), 1000 );
+    }
+    if (this.gameModeRemoveEnabled === true) {
+      this.timers["remove"]["object"] = window.setInterval(this.removeTimer.bind( this ), 1000 );
     }
   }
 
@@ -177,6 +191,7 @@ GameManager.prototype.setup = function () {
 };
 
 GameManager.prototype.resetGameMenu = function () {
+  this.clearTimers();
   this.gameModeDifficulty = "medium";
   this.size = 5;
   this.gameModeAddEnabled = false;
@@ -188,6 +203,7 @@ GameManager.prototype.resetGameMenu = function () {
   this.actuator.activateButton(".gamemode-size-five");
   this.actuator.deactivateButton(".gamemode-size-six");
   this.actuator.deactivateButton(".gamemode-add");
+  this.actuator.deactivateButton(".gamemode-remove");
 }
 
 // Set up the initial tiles to start the game with
@@ -197,13 +213,14 @@ GameManager.prototype.addStartTiles = function () {
   }
 };
 
-GameManager.prototype.timer = function() {
+GameManager.prototype.addTimer = function() {
   if (this.over == true) {
-    this.timerCurrentSeconds = 0;
+    this.timers["add"]["currentSeconds"] = 0;
+    this.clearTimers();
   } else {
-      
-    if (this.timerCurrentSeconds <= 0) {
-       this.timerCurrentSeconds = this.timerMaxSeconds;
+    this.timers["add"]["currentSeconds"] = this.timers["add"]["currentSeconds"] - 1; 
+    if (this.timers["add"]["currentSeconds"] < 0) {
+       this.timers["add"]["currentSeconds"] = this.difficultySettings[this.gameModeDifficulty]["timerAddMaxSeconds"];
        for (var i =0; i <= this.difficultySettings[this.gameModeDifficulty]["gamemodeAddAmount"] - 1; i++) {
 
          if (this.grid.cellsAvailable()) {
@@ -218,19 +235,63 @@ GameManager.prototype.timer = function() {
             this.over = true; // Game over!
             this.actuate(this.grid, this);
             this.clearTimers();
-            this.timerCurrentSeconds = 0;
           }
 
          }
         }
-       //console.log('Add new tile...');
     }
-    this.timerCurrentSeconds = this.timerCurrentSeconds - 1;
+    
   }
-  //console.log('Timer: ' + this.timerCurrentSeconds);
-
   //Do code for showing the number of seconds here
-  this.actuator.updateTimer(this.timerCurrentSeconds);
+  this.actuator.updateAddTimer(this.timers["add"]["currentSeconds"]);
+};
+
+GameManager.prototype.removeTimer = function() {
+  if (this.over == true) {
+    this.timers["remove"]["currentSeconds"] = 0;
+    this.clearTimers();
+  } else {
+    this.timers["remove"]["currentSeconds"] = this.timers["remove"]["currentSeconds"] - 1; 
+    if (this.timers["remove"]["currentSeconds"] < 0) {
+       this.timers["remove"]["currentSeconds"] = this.difficultySettings[this.gameModeDifficulty]["timerRemoveMaxSeconds"];
+       console.log("Removed a tile");
+       //remove a tile!
+       var selectedCells = this.grid.selectedCells();
+       console.log(selectedCells);
+       if (selectedCells.length) {
+          //remove the tile(s) from grid
+          for (var i = 0; i < selectedCells.length; i++) {
+            var t = this.grid.cellContent({ x: selectedCells[i].x, y: selectedCells[i].y });
+            console.log("Removed Tile: " + selectedCells[i].x + "," + selectedCells[i].y);
+            console.log("Removed Tile Entity: " + t.x + "," + t.y);
+            this.grid.removeTile(t);
+            this.actuator.removeTile(t);
+            this.score -= Math.round(t.value * this.gameModeMultiplier);
+          };
+          this.storageManager.setGameState(this.serialize());
+          if (this.grid.usedCells().length === 0 || this.score <= 0) {
+            console.log("Game Over");
+            this.over = true; // Game over!
+            this.actuate(this.grid, this);
+            this.clearTimers();
+          }
+       }
+      } else if (this.timers["remove"]["currentSeconds"] === this.difficultySettings[this.gameModeDifficulty]["timerRemoveMaxSeconds"] - 1) {
+         //select a new tile to remove
+        if (this.grid.usedCells().length > 0) {
+          var cell = this.grid.randomUsedCell();
+          this.grid.cells[cell.x][cell.y].selected = true;
+          var selector = document.querySelector(".tile-" + this.size + "-position-" + (cell.x + 1) + "-" + (cell.y + 1));
+          if (selector) {
+            selector.classList.add("tile-remove");
+          } 
+        }
+    }
+    
+  }
+  //Do code for showing the number of seconds here
+  this.actuator.updateRemoveTimer(this.timers["remove"]["currentSeconds"]);
+  this.actuator.removeScore(this.score);
 };
 
 // Adds a tile in a random position
@@ -302,7 +363,7 @@ GameManager.prototype.recalculateMultiplier = function() {
   var baseM       = this.difficultySettings[this.gameModeDifficulty]["startMultiplier"];
 
   //get percentage fill based multiplier
-  var pcM = 1 - this.getPercentageGridFilled();
+  var pcM = 1 - 2*(this.getPercentageGridFilled());
 
   if (this.gameModeAddEnabled) {
     multiplier += 1;
@@ -316,7 +377,13 @@ GameManager.prototype.recalculateMultiplier = function() {
 
   //console.log("m=" + multiplier + ", pcM=" + pcM + ", baseM=" + baseM);
   //set the multiplier
-  this.gameModeMultiplier = multiplier + baseM + pcM;
+  var multiplyerFinal = multiplier + baseM + pcM;
+  if (multiplyerFinal > 0.1) {
+    this.gameModeMultiplier = this.actuator.toFixed(multiplyerFinal, 1);
+  } else {
+    this.gameModeMultiplier = 0.1;
+  }
+  
 }
 
 // Represent the current game as an object
@@ -348,7 +415,12 @@ GameManager.prototype.moveTile = function (tile, cell) {
 };
 
 GameManager.prototype.clearTimers = function () {
-  clearInterval(this.timerObj);
+  if (this.gameModeAddEnabled === true) {
+    clearInterval(this.timers["add"]["object"]);
+  }
+  if (this.gameModeRemoveEnabled === true) {
+    clearInterval(this.timers["remove"]["object"]);
+  }
 };
 
 
@@ -380,10 +452,12 @@ GameManager.prototype.move = function (direction) {
 
         // Only one merger per row traversal?
         if (next && next.value === tile.value && !next.mergedFrom) {
-          var merged = new Tile(positions.next, tile.value * 2);
+          var position = positions.next;
+          var merged = new Tile(position, tile.value * 2);
           merged.mergedFrom = [tile, next];
+          merged.updateSelected(false);
 
-          self.grid.insertTile(merged);
+          self.grid.insertTile(merged, false);
           self.grid.removeTile(tile);
 
           // Converge the two tiles' positions
@@ -391,11 +465,9 @@ GameManager.prototype.move = function (direction) {
 
           // Update the score
           self.score += Math.round(merged.value * self.gameModeMultiplier);
-
-          // The mighty 2048 tile
+          // The mighty 8192 tile
           if (merged.value === 8192) {
             self.won = true;
-            self.clearTimers();
           }
         } else {
           self.moveTile(tile, positions.farthest);
@@ -587,8 +659,10 @@ GameManager.prototype.gamemodeAddToggle = function () {
 GameManager.prototype.gamemodeRemoveToggle = function () {
   if (this.gameModeRemoveEnabled === true) {
     this.gameModeRemoveEnabled = false;
+    this.actuator.deactivateButton(".gamemode-remove");
   } else {
     this.gameModeRemoveEnabled = true;
+    this.actuator.activateButton(".gamemode-remove");
   }
   if (this.isDebug === true) {
     console.log("Button Press: gamemodeRemoveToggle");

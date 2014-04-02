@@ -1,19 +1,20 @@
 function HTMLActuator() {
-  this.tileContainer    = document.querySelector(".tile-container");
-  this.scoreContainer   = document.querySelector(".score-container");
-  this.bestContainer    = document.querySelector(".best-container");
-  this.multiplierContainer = document.querySelector(".multiplier-container");
-  this.messageContainer = document.querySelector(".game-message");
-  this.sharingContainer = document.querySelector(".score-sharing");
-  this.timerContainer   = document.querySelector(".timer-container");
-  this.gridContainer    = document.querySelector(".grid-container");
-  this.menuContainer    = document.querySelector(".main-menu");
-  this.rootContainer    = document.querySelector(".container");
-  this.gameContainer    = document.querySelector(".game-container");
-  this.gameHeaderSizeContainer = document.querySelector(".game-header-size");
-  this.gameHeaderDifficultyContainer = document.querySelector(".game-header-difficulty");
-  this.gameHeaderAddContainer = document.querySelector(".game-header-add");
-  this.gameHeaderRemoveContainer = document.querySelector(".game-header-remove");
+  this.tileContainer                  = document.querySelector(".tile-container");
+  this.scoreContainer                 = document.querySelector(".score-container");
+  this.bestContainer                  = document.querySelector(".best-container");
+  this.multiplierContainer            = document.querySelector(".multiplier-container");
+  this.messageContainer               = document.querySelector(".game-message");
+  this.sharingContainer               = document.querySelector(".score-sharing");
+  this.addTimerContainer              = document.querySelector(".add-timer-container");
+  this.removeTimerContainer           = document.querySelector(".remove-timer-container");
+  this.gridContainer                  = document.querySelector(".grid-container");
+  this.menuContainer                  = document.querySelector(".main-menu");
+  this.rootContainer                  = document.querySelector(".container");
+  this.gameContainer                  = document.querySelector(".game-container");
+  this.gameHeaderSizeContainer        = document.querySelector(".game-header-size");
+  this.gameHeaderDifficultyContainer  = document.querySelector(".game-header-difficulty");
+  this.gameHeaderAddContainer         = document.querySelector(".game-header-add");
+  this.gameHeaderRemoveContainer      = document.querySelector(".game-header-remove");
 
   this.score = 0;
   this.difficulty = null;
@@ -38,12 +39,18 @@ HTMLActuator.prototype.actuate = function (grid, metadata) {
       grid.cells.forEach(function (column) {
         column.forEach(function (cell) {
           if (cell) {
-            self.addTile(cell);
+            self.addTile(cell, cell.selected);
           }
         });
       });
 
-      self.updateScore(metadata.score);
+      if (metadata.score >= self.score) {
+        self.updateScore(metadata.score);
+      } else {
+        self.removeScore(metadata.score);
+      }
+      
+
       self.updateBestScore(metadata.bestScore);
       self.updateMultiplier(metadata.multiplier);
 
@@ -132,7 +139,15 @@ HTMLActuator.prototype.clearContainer = function (container) {
   }
 };
 
-HTMLActuator.prototype.addTile = function (tile) {
+HTMLActuator.prototype.removeTile = function(tile) {
+  //get the tile
+  var tileDiv = document.querySelector(".tile-" + this.size + "-position-" + (tile.x + 1) + "-" + (tile.y + 1));
+  tileDiv.parentNode.removeChild(tileDiv);
+}
+
+HTMLActuator.prototype.addTile = function (tile, selected) {
+  selected = selected || false;
+
   var self = this;
 
   var wrapper   = document.createElement("div");
@@ -147,6 +162,8 @@ HTMLActuator.prototype.addTile = function (tile) {
     classes.push("tile-2");
   } else if (tile.value > 2048) {
     classes.push("tile-super");
+  } else if (selected) {
+    classes.push("tile-remove");
   }
   
   this.applyClasses(wrapper, classes);
@@ -210,12 +227,29 @@ HTMLActuator.prototype.updateScore = function (score) {
   }
 };
 
+HTMLActuator.prototype.removeScore = function (score) {
+  this.clearContainer(this.scoreContainer);
+
+  var difference = this.score - score;
+  this.score = score;
+
+  this.scoreContainer.textContent = this.score;
+
+  if (difference > 0) {
+    var addition = document.createElement("div");
+    addition.classList.add("score-addition");
+    addition.textContent = "-" + difference;
+
+    this.scoreContainer.appendChild(addition);
+  }
+};
+
 HTMLActuator.prototype.updateBestScore = function (bestScore) {
   this.bestContainer.textContent = bestScore;
 };
 
 HTMLActuator.prototype.updateMultiplier = function (multiplier) {
-  this.multiplierContainer.textContent = multiplier.toFixed(1) + "x";
+  this.multiplierContainer.textContent = this.toFixed(multiplier,1) + "x";
 };
 
 HTMLActuator.prototype.updateGameHeaderSize = function(size) {
@@ -246,8 +280,17 @@ HTMLActuator.prototype.updateGameHeaderRemove = function(value) {
   }
 }
 
-HTMLActuator.prototype.updateTimer = function (time) {
-  this.timerContainer.textContent = "00:0" + time;
+HTMLActuator.prototype.updateAddTimer = function (time) {
+  this.addTimerContainer.textContent = "00:0" + time;
+};
+
+HTMLActuator.prototype.updateRemoveTimer = function (time) {
+  var timeFormatted = "" + time;
+
+  if (time < 10) {
+    timeFormatted = "0" + time;
+  }
+  this.removeTimerContainer.textContent = "00:" + timeFormatted;
 };
 
 HTMLActuator.prototype.activateButton = function(identifier) {
@@ -298,6 +341,12 @@ HTMLActuator.prototype.clearMessage = function () {
   this.messageContainer.classList.remove("game-over");
   this.messageContainer.classList.remove("game-menu");
 };
+
+HTMLActuator.prototype.toFixed = function( number, precision ) {
+    var multiplier = Math.pow( 10, precision + 1 ),
+        wholeNumber = Math.floor( number * multiplier );
+    return Math.round( wholeNumber / 10 ) * 10 / multiplier;
+}
 
 HTMLActuator.prototype.scoreTweetButton = function () {
   var tweet = document.createElement("a");
