@@ -368,6 +368,9 @@ GameManager.prototype.recalculateMultiplier = function() {
   if (this.gameModeAddEnabled) {
     multiplier += 1;
   }
+  if (this.gameModeRemoveEnabled) {
+    multiplier += 1;
+  }
 
   if (this.size === 4) {
     multiplier += 1;

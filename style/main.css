@@ -1083,7 +1083,12 @@ hr {
   float: right; }
 
 .game-explanation {
-  margin-top: 50px; }
+  margin-top: 10px; }
+
+h3.title {
+  text-transform: uppercase;
+  font-weight: bold;
+}
 
 .sharing {
   margin-top: 20px;
