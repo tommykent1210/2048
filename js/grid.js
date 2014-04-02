@@ -42,6 +42,14 @@ Grid.prototype.randomAvailableCell = function () {
   }
 };
 
+Grid.prototype.randomUsedCell = function () {
+  var cells = this.usedCells();
+
+  if (cells.length) {
+    return cells[Math.floor(Math.random() * cells.length)];
+  }
+};
+
 Grid.prototype.availableCells = function () {
   var cells = [];
 
@@ -52,6 +60,33 @@ Grid.prototype.availableCells = function () {
   });
 
   return cells;
+};
+
+Grid.prototype.selectedCells = function () {
+  var cells = [];
+  this.eachCell(function (x, y, tile) {
+    if (tile) {
+      if (tile.selected) {
+        console.log(tile.x + "," + tile.y + " value: " + tile.value);
+        cells.push({ x: x, y: y });
+        tile.selected = false;
+      }
+    }
+  });
+
+  return cells;
+};
+
+Grid.prototype.usedCells = function () {
+  var cells = [];
+
+  this.eachCell(function (x, y, tile) {
+    if (tile && tile.value !== "X") {
+      cells.push({ x: x, y: y });
+    }
+  });
+
+  return cells || null;
 };
 
 // Call callback for every cell
